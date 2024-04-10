@@ -4,20 +4,24 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class CSVToBinaryConverter {
 
     public static void main(String[] args) {
-        String inputFileName = "D:\\Test\\input_hex.csv";
-        String outputFileName = "D:\\Test\\output_binary.bin";
+        String inputFileName = "D:\\Test\\input_hex_message.csv";
+        String outputFileName = "D:\\Test\\output_hex_message_with_length.bin";
 
         try {
             // 创建文件读取流
             BufferedReader reader = new BufferedReader(new FileReader(inputFileName));
             // 创建文件写入流
             BufferedOutputStream writer = new BufferedOutputStream(Files.newOutputStream(Paths.get(outputFileName)));
+            // 创建一个4字节的ByteBuffer，并指定字节序为小端序
+            ByteBuffer buffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
 
             boolean isFoundFirstRow = false;
 
@@ -42,9 +46,12 @@ public class CSVToBinaryConverter {
                         code ^= bytes[i];
                     }
                     if (code == bytes[bytes.length - 1]) {
-                        if (count >= 100000) {
+                        if (count >= 1000000) {
                             break;
                         }
+                        buffer.clear();
+                        buffer.putInt(bytes.length);
+                        writer.write(buffer.array());
                         writer.write(bytes);
                         count++;
                     }
